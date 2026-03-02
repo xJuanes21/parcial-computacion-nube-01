@@ -1,8 +1,6 @@
-import os
 class Config:
-    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'mysql_users')
+    MYSQL_HOST = 'mysql_orders'
     MYSQL_USER = 'root'
     MYSQL_PASSWORD = 'root'
-    MYSQL_DB = 'myflaskapp'
+    MYSQL_DB = 'orders_db'
     SQLALCHEMY_DATABASE_URI = f'mysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}'
-

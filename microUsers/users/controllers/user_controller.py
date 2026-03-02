@@ -83,4 +83,8 @@ def login():
     #print(g.__dict__)
     print("En session: ",session)
 
-    return jsonify({'message': 'Login successful'})
+    return jsonify({
+        'message': 'Login successful',
+        'username': user.username,
+        'email': user.email
+    })

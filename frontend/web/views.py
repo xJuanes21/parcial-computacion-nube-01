@@ -26,6 +26,10 @@ def users():
 def products():
     return render_template('products.html')
 
+@app.route('/shop')
+def shop():
+    return render_template('shop.html')
+
 # Ruta para renderizar el template orders.html
 @app.route('/orders')
 def orders():

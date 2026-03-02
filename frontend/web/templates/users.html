@@ -3,84 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>User Management - Micro Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
-            padding-top: 50px;
-            padding-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding-top: 80px;
+            padding-bottom: 40px;
         }
         .navbar {
-            margin-bottom: 20px;
+            background: linear-gradient(90deg, #1e1e2f, #2a2a40);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .form-container {
-            max-width: 500px;
-            margin: 0 auto;
+        .navbar-brand {
+            font-weight: 600;
+            letter-spacing: 1px;
         }
-        .user-list {
-            margin-top: 20px;
-            list-style-type: none;
+        .card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
         }
-        .user-item {
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1.5rem;
+            font-weight: 600;
         }
-        .user-item a {
+        .table img {
+            border-radius: 50%;
             margin-right: 10px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .btn-primary {
+            background-color: #4a4aff;
+            border: none;
+            padding: 0.5rem 1.5rem;
+        }
+        .btn-primary:hover {
+            background-color: #3b3be6;
         }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="/dashboard">Store Management</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/dashboard">Micro Store</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+      <span class="navbar-toggler-icon"></span>
     </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" href="/users">Users</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/products">Store & Orders</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/orders">History</a>
+        </li>
+      </ul>
+      <div class="d-flex">
+         <button class="btn btn-outline-light btn-sm" onclick="sessionStorage.clear(); window.location.href='/';">Logout</button>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <div class="container">
-    <div class="form-container">
-        <h2>Add New User</h2>
-        <form id="add-user-form">
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" class="form-control" id="name" required>
+    <div class="row">
+        <!-- Add User Form -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    Add New User
+                </div>
+                <div class="card-body">
+                    <form id="add-user-form">
+                        <div class="mb-3">
+                            <label class="form-label" for="name">Full Name</label>
+                            <input type="text" class="form-control" id="name" required placeholder="John Doe">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="email">Email</label>
+                            <input type="email" class="form-control" id="email" required placeholder="name@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="username">Username</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" for="password">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" onclick="createUser()">Create User</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" class="form-control" id="email" required>
-            </div>
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" required>
-            </div>
-            <button type="button" onclick="createUser()">Create User</button>
-        </form>
-    </div>
+        </div>
 
-    <h2>Users List</h2>
-    <table id="user-list" class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Username</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <button type="button" onclick="getUsers()">Get Users</button>
+        <!-- Users List -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Users Directory</span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="getUsers()">↻ Refresh</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table id="user-list" class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">ID / Name</th>
+                                    <th>Email</th>
+                                    <th>Username</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Users get injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="static/scriptUsers.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        getUsers(); // Load users immediately when the page loads
+    });
+</script>
 </body>
 </html>
-

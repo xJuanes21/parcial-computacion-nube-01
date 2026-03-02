@@ -1,0 +1,105 @@
+version: "3.8"
+
+services:
+  consul:
+    image: hashicorp/consul:1.15.4
+    container_name: consul
+    ports:
+      - "8500:8500"
+    command: "agent -dev -client=0.0.0.0 -ui"
+
+  mysql_users:
+    image: mysql:8.0
+    container_name: mysql_users
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  mysql_products:
+    image: mysql:8.0
+    container_name: mysql_products
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./init-products.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  mysql_orders:
+    image: mysql:8.0
+    container_name: mysql_orders
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./init-orders.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  users_service:
+    build: ./microUsers
+    container_name: users_service
+    ports:
+      - "5002:5002"
+    environment:
+      - MYSQL_HOST=mysql_users
+      - CONSUL_HOST=consul
+    depends_on:
+      mysql_users:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+  products_service:
+    build: ./microProducts
+    container_name: products_service
+    ports:
+      - "5003:5003"
+    environment:
+      - MYSQL_HOST=mysql_products
+      - CONSUL_HOST=consul
+    depends_on:
+      mysql_products:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+  orders_service:
+    build: ./microOrders
+    container_name: orders_service
+    ports:
+      - "5004:5004"
+    environment:
+      - MYSQL_HOST=mysql_orders
+      - CONSUL_HOST=consul
+    depends_on:
+      mysql_orders:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_APP=run.py
+    depends_on:
+      - users_service
+      - products_service
+      - orders_service

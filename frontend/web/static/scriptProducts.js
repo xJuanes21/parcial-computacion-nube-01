@@ -1,77 +1,47 @@
+// ----- INVENTORY ADMIN FUNCTIONS -----
+
 function getProducts() {
-    fetch('http://192.168.80.3:5003/api/products', {
+    fetch(`http://${window.location.hostname}:5003/api/products`, {
      method: 'GET',
-     headers: {
-        'Content-Type': 'application/json'
-        },
+     headers: { 'Content-Type': 'application/json' },
      credentials: 'include'
     })
-        .then(response => response.json())
-        .then(data => {
-            // Handle data
-            console.log(data);
+    .then(response => response.json())
+    .then(data => {
+        var productListBody = document.querySelector('#product-list tbody');
+        if(!productListBody) return; // Prevent error if not on Admin page
+        productListBody.innerHTML = ''; 
 
-            // Get table body
-            var productListBody = document.querySelector('#product-list tbody');
-            productListBody.innerHTML = ''; // Clear previous data
+        data.forEach(product => {
+            var row = document.createElement('tr');
 
-            // Loop through products and populate table rows
-            data.forEach(product => {
-                var row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="ps-4 fw-bold text-secondary">${product.id}</td>
+                <td class="fw-medium text-dark">${product.name}</td>
+                <td class="text-success fw-bold">$${parseFloat(product.price).toFixed(2)}</td>
+                <td><span class="badge ${product.quantity > 10 ? 'bg-success' : (product.quantity > 0 ? 'bg-warning text-dark' : 'bg-danger')}">${product.quantity} units</span></td>
+            `;
 
-                // Id
-                var idCell = document.createElement('td');
-                idCell.textContent = product.id;
-                row.appendChild(idCell);
+            var actionsCell = document.createElement('td');
+            actionsCell.className = 'text-end pe-4';
 
-                // Name
-                var nameCell = document.createElement('td');
-                nameCell.textContent = product.name;
-                row.appendChild(nameCell);
+            var editLink = document.createElement('a');
+            editLink.href = `/editProduct/${product.id}`;
+            editLink.textContent = 'Edit';
+            editLink.className = 'btn btn-outline-primary btn-sm rounded-pill px-3 me-2';
+            actionsCell.appendChild(editLink);
 
-                // Price
-                var priceCell = document.createElement('td');
-                priceCell.textContent = product.price;
-                row.appendChild(priceCell);
+            var deleteLink = document.createElement('button');
+            deleteLink.textContent = 'Remove';
+            deleteLink.className = 'btn btn-outline-danger btn-sm rounded-pill px-3';
+            deleteLink.onclick = function() { deleteProduct(product.id) };
+            actionsCell.appendChild(deleteLink);
 
-                // Quantity
-                var quantityCell = document.createElement('td');
-                quantityCell.textContent = product.quantity;
-                row.appendChild(quantityCell);
-
-		// Order
-		var orderInput = document.createElement('input');
-		orderInput.type = 'text';
-		orderInput.value = "0";
-		row.appendChild(orderInput);
-
-                // Actions
-                var actionsCell = document.createElement('td');
-
-                // Edit link
-                var editLink = document.createElement('a');
-                editLink.href = `/editProduct/${product.id}`;
-                //editLink.href = `edit.html?id=${product.id}`;
-                editLink.textContent = 'Edit';
-                editLink.className = 'btn btn-primary mr-2';
-                actionsCell.appendChild(editLink);
-
-                // Delete link
-                var deleteLink = document.createElement('a');
-                deleteLink.href = '#';
-                deleteLink.textContent = 'Delete';
-                deleteLink.className = 'btn btn-danger';
-                deleteLink.addEventListener('click', function() {
-                    deleteProduct(product.id);
-                });
-                actionsCell.appendChild(deleteLink);
-
-                row.appendChild(actionsCell);
-
-                productListBody.appendChild(row);
-            });
-        })
-        .catch(error => console.error('Error:', error));
+            row.appendChild(actionsCell);
+            productListBody.appendChild(row);
+        });
+    })
+    .catch(error => console.error('Error:', error));
 }
 
 function createProduct() {
@@ -81,34 +51,20 @@ function createProduct() {
         quantity: document.getElementById('quantity').value
     };
 
-    fetch('http://192.168.80.3:5003/api/products', {
+    fetch(`http://${window.location.hostname}:5003/api/products`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        // Handle success
-        console.log(data);
+        document.getElementById('add-product-form').reset();
+        getProducts();
     })
-    .catch(error => {
-        // Handle error
-        console.error('Error:', error);
-    });
+    .catch(error => console.error('Error:', error));
 }
 
 function updateProduct() {
-
-    //const userName = '{{ username }}';
-    //console.log('userName: ',userName);
-
     var productId = document.getElementById('product-id').value;
     var data = {
         name: document.getElementById('name').value,
@@ -116,7 +72,7 @@ function updateProduct() {
         quantity: document.getElementById('quantity').value
     };
 
-    fetch(`http://192.168.80.3:5003/api/products/${productId}`, {
+    fetch(`http://${window.location.hostname}:5003/api/products/${productId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -124,73 +80,89 @@ function updateProduct() {
         body: JSON.stringify(data),
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
         return response.json();
     })
     .then(data => {
-        // Handle success
-        console.log(data);
-        // Optionally, redirect to another page or show a success message
+        window.location.href = '/products';
     })
-    .catch(error => {
-        // Handle error
-        console.error('Error:', error);
-    });
+    .catch(error => alert('Error updating product: ' + error));
 }
 
-
-
 function deleteProduct(productId) {
-    console.log('Deleting product with ID:', productId);
     if (confirm('Are you sure you want to delete this product?')) {
-        fetch(`http://192.168.80.3:5003/api/products/${productId}`, {
+        fetch(`http://${window.location.hostname}:5003/api/products/${productId}`, {
             method: 'DELETE',
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Handle success
-            console.log('Product deleted successfully:', data);
-            // Reload the product list
-            getProducts();
-        })
-        .catch(error => {
-            // Handle error
-            console.error('Error:', error);
-        });
+        .then(response => response.json())
+        .then(data => { getProducts(); })
+        .catch(error => console.error('Error:', error));
     }
 }
 
+// ----- FRONTEND SHOP FUNCTIONS -----
+
+function getProductsForShop() {
+    fetch(`http://${window.location.hostname}:5003/api/products`, {
+     method: 'GET',
+     headers: { 'Content-Type': 'application/json' },
+     credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        var productListBody = document.querySelector('#shop-product-list tbody');
+        if(!productListBody) return;
+        productListBody.innerHTML = ''; 
+
+        data.forEach(product => {
+            var row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td class="ps-4 fw-bold text-secondary">${product.id}</td>
+                <td class="fw-medium text-dark">${product.name}</td>
+                <td class="text-success fw-bold">$${parseFloat(product.price).toFixed(2)}</td>
+                <td><span class="badge ${product.quantity > 10 ? 'bg-success' : (product.quantity > 0 ? 'bg-warning text-dark' : 'bg-danger')}">${product.quantity} units</span></td>
+            `;
+
+    		// Order Qty Input
+            var orderInputCell = document.createElement('td');
+            orderInputCell.className = 'pe-4 text-end';
+    		var orderInput = document.createElement('input');
+    		orderInput.type = 'number';
+            orderInput.min = '0';
+            orderInput.max = product.quantity;
+    		orderInput.value = "0";
+            orderInput.className = 'form-control form-control-sm quantity-input ms-auto';
+            if(product.quantity === 0) orderInput.disabled = true;
+    		orderInputCell.appendChild(orderInput);
+            row.appendChild(orderInputCell);
+
+            productListBody.appendChild(row);
+        });
+    })
+    .catch(error => console.error('Error:', error));
+}
 
 function orderProducts() {
-  // Obtener los productos seleccionados y sus cantidades
   const selectedProducts = [];
-  const productRows = document.querySelectorAll('#product-list tbody tr');
+  const productRows = document.querySelectorAll('#shop-product-list tbody tr');
+  
   productRows.forEach(row => {
-    const quantityInput = row.querySelector('input[type="text"]');
+    const quantityInput = row.querySelector('input[type="number"]');
+    if(!quantityInput) return;
+    
     const quantity = parseInt(quantityInput.value);
     if (quantity > 0) {
-      //const productId = row.id.split('-')[1]; // Extraer el ID del producto del atributo id de la fila
-	    //
-      var productId = row.querySelector('td:nth-child(1)').textContent;
-      //const productId = row.id.textContent; // Extraer el ID del producto del atributo id de la fila
+      var productId = parseInt(row.querySelector('td:nth-child(1)').textContent);
       selectedProducts.push({ id: productId, quantity });
     }
   });
 
-  // Si no hay productos seleccionados, mostrar un mensaje de error
   if (selectedProducts.length === 0) {
-    alert('Por favor, selecciona al menos un producto para realizar la orden.');
+    alert('Please select at least one product to order with a quantity greater than 0.');
     return;
   }
 
-  // Preparar los datos de la orden
   const orderData = {
     user: {
       name: sessionStorage.getItem('username'),
@@ -199,8 +171,7 @@ function orderProducts() {
     products: selectedProducts
   };
 
-  // Enviar los datos de la orden al endpoint
-  fetch('http://192.168.80.3:5004/api/orders', {
+  fetch(`http://${window.location.hostname}:5004/api/orders`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(orderData),
@@ -209,18 +180,15 @@ function orderProducts() {
   .then(response => response.json())
   .then(data => {
     if (data.message === 'Orden creada exitosamente') {
-      console.log('Orden creada exitosamente!');
-      // Mostrar un mensaje de confirmación al usuario
-      alert('¡Orden creada exitosamente!');
-      // Actualizar la interfaz de usuario para reflejar los cambios (opcional)
+      alert('📦 Success! Purchase order confirmed and inventory updated.');
+      getProductsForShop(); // reload to show updated stock
+      window.scrollTo(0, 0); // scroll to top
     } else {
-      console.error('Error al crear la orden:', data.message);
-      // Mostrar un mensaje de error al usuario
-      alert('Error al crear la orden. Por favor, intenta nuevamente.');
+      alert('Error creating order: ' + data.message);
     }
   })
   .catch(error => {
     console.error('Error:', error);
-    alert('Ocurrió un error al procesar la orden. Por favor, intenta nuevamente.');
+    alert('An unexpected error occurred while placing your order.');
   });
 }
