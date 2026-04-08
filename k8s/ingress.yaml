@@ -1,0 +1,33 @@
+# Kubernetes - Parcial #2 - Ingress Rules (Fixed with sub-path preservation)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: microapp-ingress
+  namespace: microapp
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api/users(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: users-svc
+            port:
+              number: 3001
+      - path: /api/products(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: products-svc
+            port:
+              number: 3002
+      - path: /api/orders(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: orders-svc
+            port:
+              number: 3003

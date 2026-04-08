@@ -2,45 +2,45 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-22.04"
 
-  config.vm.define :servidorWeb do |servidorWeb|
+  # NODO DE CONTROL (Terraform + Ansible)
+  config.vm.define "control" do |control|
+    control.vm.hostname = "control-node"
+    control.vm.network "private_network", ip: "192.168.80.10"
+    control.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+    # Provisioning basic tools in control node
+    control.vm.provision "shell", inline: <<-SHELL
+      sudo apt update -y
+      sudo apt install -y gnupg software-properties-common curl git unzip ansible
+      
+      # Instalar Terraform
+      wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+      echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+      sudo apt update && sudo apt install terraform -y
+    SHELL
+  end
 
-    servidorWeb.vm.box = "bento/ubuntu-22.04"
-    servidorWeb.vm.hostname = "servidorWeb"
+  # VM PARA HAPROXY
+  config.vm.define "haproxy" do |haproxy|
+    haproxy.vm.hostname = "vm-haproxy"
+    haproxy.vm.network "private_network", ip: "192.168.80.11"
+    haproxy.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+      vb.cpus = 1
+    end
+  end
 
-    # IP privada fija
-    servidorWeb.vm.network :private_network, ip: "192.168.80.10"
-
-    # Recursos suficientes para Docker + MySQL + Consul
-    servidorWeb.vm.provider "virtualbox" do |vb|
-      vb.gui = true	
-      vb.memory = 4096
+  # VM PARA MICROSERVICIOS
+  config.vm.define "microservices" do |microservices|
+    microservices.vm.hostname = "vm-microservices"
+    microservices.vm.network "private_network", ip: "192.168.80.12"
+    microservices.vm.provider "virtualbox" do |vb|
+      vb.memory = "4096"
       vb.cpus = 2
     end
-
-    # IMPORTANTE:
-    # NO usamos file provisioner.
-    # Trabajaremos con la carpeta sincronizada automática:
-    # Windows ↔ /vagrant
-
-    servidorWeb.vm.provision "shell", inline: <<-SHELL
-
-      sudo apt update -y
-      sudo apt upgrade -y
-
-      # Instalar herramientas básicas
-      sudo apt install -y git curl unzip
-
-      # Instalar Docker
-      sudo apt install -y docker.io docker-compose
-
-      sudo systemctl enable docker
-      sudo systemctl start docker
-
-      # Permitir usar docker sin sudo
-      sudo usermod -aG docker vagrant
-
-    SHELL
-
   end
 end

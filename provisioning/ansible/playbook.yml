@@ -1,0 +1,71 @@
+---
+- name: Configure Microservices Node
+  hosts: microservices
+  become: yes
+  tasks:
+    - name: Install basic packages
+      apt:
+        name: ["curl", "git", "unzip", "ca-certificates"]
+        state: present
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: ["docker.io", "docker-compose"]
+        state: present
+
+    - name: Enable and Start Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create working directory
+      file:
+        path: /home/vagrant/app
+        state: directory
+        owner: vagrant
+        group: vagrant
+
+    - name: Copy project files
+      copy:
+        src: /vagrant/
+        dest: /home/vagrant/app/
+        owner: vagrant
+        group: vagrant
+
+    - name: Build and Run containers
+      shell: "docker-compose -f /home/vagrant/app/docker-compose.yml up -d"
+      args:
+        chdir: /home/vagrant/app
+
+- name: Configure HAProxy Node
+  hosts: haproxy
+  become: yes
+  tasks:
+    - name: Install HAProxy
+      apt:
+        name: haproxy
+        state: present
+        update_cache: yes
+
+    - name: Copy HAProxy config
+      copy:
+        src: /vagrant/provisioning/haproxy/haproxy.cfg
+        dest: /etc/haproxy/haproxy.cfg
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart haproxy
+
+    - name: Enable and Start HAProxy
+      systemd:
+        name: haproxy
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart haproxy
+      systemd:
+        name: haproxy
+        state: restarted

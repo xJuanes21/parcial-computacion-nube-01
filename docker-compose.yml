@@ -18,9 +18,10 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
 
   mysql_products:
     image: mysql:8.0
@@ -32,9 +33,10 @@ services:
     volumes:
       - ./init-products.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
 
   mysql_orders:
     image: mysql:8.0
@@ -46,15 +48,30 @@ services:
     volumes:
       - ./init-orders.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
 
   users_service:
     build: ./microUsers
     container_name: users_service
     ports:
-      - "5002:5002"
+      - "3001:3001"
+    environment:
+      - MYSQL_HOST=mysql_users
+      - CONSUL_HOST=consul
+    depends_on:
+      mysql_users:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+  users_service_2:
+    build: ./microUsers
+    container_name: users_service_2
+    ports:
+      - "3011:3001"
     environment:
       - MYSQL_HOST=mysql_users
       - CONSUL_HOST=consul
@@ -68,7 +85,21 @@ services:
     build: ./microProducts
     container_name: products_service
     ports:
-      - "5003:5003"
+      - "3002:3002"
+    environment:
+      - MYSQL_HOST=mysql_products
+      - CONSUL_HOST=consul
+    depends_on:
+      mysql_products:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+  products_service_2:
+    build: ./microProducts
+    container_name: products_service_2
+    ports:
+      - "3012:3002"
     environment:
       - MYSQL_HOST=mysql_products
       - CONSUL_HOST=consul
@@ -82,7 +113,21 @@ services:
     build: ./microOrders
     container_name: orders_service
     ports:
-      - "5004:5004"
+      - "3003:3003"
+    environment:
+      - MYSQL_HOST=mysql_orders
+      - CONSUL_HOST=consul
+    depends_on:
+      mysql_orders:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+  orders_service_2:
+    build: ./microOrders
+    container_name: orders_service_2
+    ports:
+      - "3013:3003"
     environment:
       - MYSQL_HOST=mysql_orders
       - CONSUL_HOST=consul

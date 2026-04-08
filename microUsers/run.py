@@ -9,7 +9,7 @@ def register_consul():
     consul_port = os.environ.get('CONSUL_PORT', '8500')
     service_id = 'users-service-1'
     service_name = 'users-service'
-    service_port = 5002
+    service_port = 3001
 
     payload = {
         "ID": service_id,
@@ -37,4 +37,4 @@ def register_consul():
 
 if __name__ == '__main__':
     threading.Thread(target=register_consul, daemon=True).start()
-    app.run(host='0.0.0.0',port=5002)
+    app.run(host='0.0.0.0',port=3001)

@@ -1,0 +1,6 @@
+Estudiantes:
+- Andrés Felipe Cardona Millán
+- Juan Esteban Salazar Toro
+
+Repositorio de GitHub:
+https://github.com/xJuanes21/parcial-computacion-nube-01

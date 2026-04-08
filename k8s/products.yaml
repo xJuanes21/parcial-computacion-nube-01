@@ -1,0 +1,42 @@
+# Kubernetes - Parcial #2 - Products Service
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-svc
+  namespace: microapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: products-svc
+  template:
+    metadata:
+      labels:
+        app: products-svc
+    spec:
+      containers:
+      - name: products-service
+        image: xjuanes21/products-service:latest
+        ports:
+        - containerPort: 3002
+        env:
+        - name: MYSQL_HOST
+          value: "mysql-products"
+        - name: MYSQL_PORT
+          value: "3306"
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-svc
+  namespace: microapp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3002
+    targetPort: 3002
+  selector:
+    app: products-svc

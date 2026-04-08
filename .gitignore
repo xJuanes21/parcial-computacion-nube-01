@@ -1,0 +1,22 @@
+# Binaries
+*.exe
+minikube*
+kubectl
+minikube-linux-amd64
+
+# Terraform
+.terraform/
+terraform.tfstate*
+
+# Vagrant
+.vagrant/
+
+# Local Dev
+__pycache__/
+*.pyc
+.env
+
+# Media
+*.img
+*.png
+*.webp

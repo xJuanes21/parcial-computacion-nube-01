@@ -1,0 +1,42 @@
+# Kubernetes - Parcial #2 - Orders Service
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-svc
+  namespace: microapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: orders-svc
+  template:
+    metadata:
+      labels:
+        app: orders-svc
+    spec:
+      containers:
+      - name: orders-service
+        image: xjuanes21/orders-service:latest
+        ports:
+        - containerPort: 3003
+        env:
+        - name: MYSQL_HOST
+          value: "mysql-orders"
+        - name: MYSQL_PORT
+          value: "3306"
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-svc
+  namespace: microapp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3003
+    targetPort: 3003
+  selector:
+    app: orders-svc

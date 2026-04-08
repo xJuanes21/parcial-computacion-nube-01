@@ -3,8 +3,8 @@
 Este repositorio contiene la entrega del **Segundo Parcial de Computación en la Nube**.
 
 ## 👥 Estudiantes
-*   **Andrés Cardona**
-*   **Juan Esteban Salazar**
+*   **Andrés Felipe Cardona Millán**
+*   **Juan Esteban Salazar Toro**
 
 ---
 

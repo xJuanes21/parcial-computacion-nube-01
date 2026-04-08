@@ -1,0 +1,129 @@
+# Kubernetes - Parcial #2 - MySQL Deployments with Init (Fixed Indentation)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-users
+  namespace: microapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-users
+  template:
+    metadata:
+      labels:
+        app: mysql-users
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d/init.sql
+          subPath: users-init.sql
+      volumes:
+      - name: init-sql
+        configMap:
+          name: db-init-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-users
+  namespace: microapp
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql-users
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-products
+  namespace: microapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-products
+  template:
+    metadata:
+      labels:
+        app: mysql-products
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d/init.sql
+          subPath: products-init.sql
+      volumes:
+      - name: init-sql
+        configMap:
+          name: db-init-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-products
+  namespace: microapp
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql-products
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-orders
+  namespace: microapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-orders
+  template:
+    metadata:
+      labels:
+        app: mysql-orders
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "root"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: init-sql
+          mountPath: /docker-entrypoint-initdb.d/init.sql
+          subPath: orders-init.sql
+      volumes:
+      - name: init-sql
+        configMap:
+          name: db-init-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-orders
+  namespace: microapp
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql-orders
