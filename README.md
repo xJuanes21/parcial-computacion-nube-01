@@ -1,40 +1,46 @@
-# To Run application
+# ☁️ Parcial #2 - Computación en la Nube
 
-## Start and SSH into Vagrant VM 
+Este repositorio contiene la entrega del **Segundo Parcial de Computación en la Nube**.
 
-```
-vagrant up
-vagrant ssh servidorWeb
-```
+## 👥 Estudiantes
+*   **Andrés Cardona**
+*   **Juan Esteban Salazar**
 
-## Run the webApp
+---
 
-```
-cd /home/vagrant/frontend
-export FLASK_APP=run.py
-/usr/local/bin/flask run --host=0.0.0.0 --port 5001
-```
+## 🛠️ Descripción del Proyecto
+El proyecto consiste en una arquitectura de microservices altamente disponible y reproducible, desplegada inicialmente en un entorno local (Vagrant) y diseñada para ser escalable en la nube (Azure).
 
-## Run the Users Microservice
+### Componentes Clave:
+1.  **Infraestructura como Código (IaC)**:
+    *   **Terraform**: Para el aprovisionamiento de máquinas virtuales y recursos de red.
+    *   **Ansible**: Para la configuración automática de los nodos (instalación de Docker, HAProxy y despliegue de contenedores).
+2.  **Arquitectura de Microservicios**:
+    *   Tres microservicios independientes (`Users`, `Products`, `Orders`) desarrollados en Flask con bases de datos MySQL aisladas.
+    *   **Consul**: Para Service Discovery entre microservicios.
+3.  **Balanceo de Carga**:
+    *   **HAProxy**: Como punto de entrada único, gestionando el ruteo por rutas URL (`/api/users`, etc.) y balanceo Round-Robin entre múltiples réplicas.
+4.  **Orquestación con Kubernetes**:
+    *   Manifiestos de Kubernetes para despliegue en cluster (Local con Minikube o Cloud con AKS).
+    *   Uso de **Ingress Controller** para la gestión del tráfico externo.
 
-```
-cd /home/vagrant/microUsers
-export FLASK_APP=run.py
-/usr/local/bin/flask run --host=0.0.0.0 --port 5002
-```
+---
 
-## Run the Products Microservice
+## 🚀 Cómo ejecutar (Modo Local)
 
-```
-cd /home/vagrant/microProducts
-export FLASK_APP=run.py
-/usr/local/bin/flask run --host=0.0.0.0 --port 5003
-```
+1.  **Levantar Infraestructura**:
+    ```bash
+    vagrant up
+    ```
+2.  **Configurar con Ansible**:
+    Desde el nodo `control`:
+    ```bash
+    cd /vagrant/provisioning/ansible
+    ansible-playbook -i inventory.ini playbook.yml --extra-vars "ansible_ssh_pass=vagrant"
+    ```
+3.  **Acceder al Sistema**:
+    *   **API**: `http://192.168.80.11/api/users`
+    *   **Estadísticas HAProxy**: `http://192.168.80.11:8080/stats` (admin/admin123)
 
-## Run the Oders Microservice
-
-```
-cd /home/vagrant/microOrders
-export FLASK_APP=run.py
-/usr/local/bin/flask run --host=0.0.0.0 --port 5004
-```
+---
+*Universidad EAFIT - 2026*
